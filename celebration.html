@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Самый важный праздник</title>
+  <style>
+    :root {
+      --bg-dark: #150b1d;
+      --bg-glow: #2a1337;
+      --accent: #ff7ec7;
+      --accent-2: #ffb3f4;
+      --card: rgba(255, 255, 255, 0.08);
+      --stroke: rgba(255, 255, 255, 0.2);
+      --text: #fff6ff;
+      --muted: #e3d6ff;
+      --shadow: 0 20px 80px rgba(0, 0, 0, 0.6);
+      --story-width: min(430px, 100% - 24px);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      color: var(--text);
+      font-family: "Manrope", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(255, 126, 199, 0.25), transparent 24%),
+        radial-gradient(circle at 80% 12%, rgba(255, 179, 244, 0.28), transparent 22%),
+        radial-gradient(circle at 52% 72%, rgba(255, 212, 121, 0.18), transparent 32%),
+        linear-gradient(135deg, #1d0c27 0%, #150b1d 55%, #1e0f2c 100%);
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 111, 183, 0.12), rgba(93, 224, 255, 0.12));
+      mix-blend-mode: screen;
+      opacity: 0.6;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body.locked { overflow: hidden; }
+
+    #snow {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .glow-circle {
+      position: fixed;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(255, 126, 199, 0.32) 0%, transparent 60%);
+      filter: blur(50px);
+      top: -140px;
+      right: -70px;
+      z-index: 1;
+      pointer-events: none;
+      animation: float 14s ease-in-out infinite alternate;
+    }
+
+    main {
+      position: relative;
+      z-index: 3;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0 26px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease;
+    }
+
+    body.open main { opacity: 1; pointer-events: auto; }
+
+    .story-container {
+      width: var(--story-width);
+      height: calc(100vh - 20px);
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      padding: 6px 0 20px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      position: relative;
+    }
+
+    .story {
+      scroll-snap-align: start;
+      min-height: calc(100vh - 32px);
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      border-radius: 22px;
+      margin: 10px auto 18px;
+      padding: clamp(18px, 4vw, 28px);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.5s ease, transform 0.6s ease;
+    }
+
+    .story::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 65%);
+      pointer-events: none;
+    }
+
+    .story h1, .story h2, .story h3 {
+      margin: 0 0 10px;
+      letter-spacing: 0.6px;
+      text-shadow: 0 6px 30px rgba(255, 111, 183, 0.28);
+    }
+
+    .story.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .story h1 { font-size: clamp(26px, 5vw, 34px); }
+    .story h2 { font-size: clamp(22px, 4.6vw, 28px); }
+    .story h3 { font-size: clamp(18px, 4vw, 22px); }
+
+    .lead {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 8px 0 12px;
+    }
+
+    .ornament {
+      position: absolute;
+      inset: 12px;
+      border: 1px dashed rgba(255, 255, 255, 0.16);
+      border-radius: 18px;
+      pointer-events: none;
+    }
+
+    .sparkles {
+      position: absolute;
+      inset: -20px -10px auto;
+      height: 120px;
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.14) 0 1px, transparent 1px),
+        radial-gradient(circle at 80% 40%, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px),
+        radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px);
+      background-size: 180px 180px;
+      opacity: 0.7;
+      animation: drift 18s linear infinite;
+      pointer-events: none;
+    }
+
+    .hero-ornaments {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .ribbon-curve {
+      position: absolute;
+      width: 220px;
+      height: 140px;
+      background: radial-gradient(circle at 30% 40%, rgba(255, 126, 199, 0.4), transparent 65%),
+                  radial-gradient(circle at 80% 40%, rgba(255, 179, 244, 0.35), transparent 70%);
+      filter: blur(6px);
+      transform: rotate(-12deg);
+    }
+
+    .ribbon-curve.right {
+      right: -40px;
+      top: -10px;
+      transform: rotate(14deg);
+    }
+
+    .ribbon-curve.left {
+      left: -40px;
+      top: 40px;
+    }
+
+    .heart-bloom {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      bottom: 18px;
+      right: 12px;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), transparent 60%),
+                  radial-gradient(circle at 60% 40%, rgba(255, 126, 199, 0.35), transparent 62%);
+      clip-path: path("M60 120S0 82 0 40 36 0 60 24C84 0 120 18 120 44 120 86 60 120 60 120Z");
+      filter: drop-shadow(0 10px 24px rgba(255, 126, 199, 0.3));
+    }
+
+    .snowflake {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      top: 14px;
+      left: 14px;
+      background:
+        radial-gradient(circle, rgba(255,255,255,0.9) 0 40%, transparent 42%),
+        conic-gradient(from 0deg, rgba(255,255,255,0.7) 0 12%, transparent 12% 25%, rgba(255,255,255,0.7) 25% 37%, transparent 37% 50%, rgba(255,255,255,0.7) 50% 62%, transparent 62% 75%, rgba(255,255,255,0.7) 75% 87%, transparent 87% 100%);
+      mask: radial-gradient(circle, black 0 55%, transparent 70%);
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,0.3));
+    }
+
+    .garland {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .garland span {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255, 111, 183, 0.8), rgba(93, 224, 255, 0.8));
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+      animation: glow 3.6s ease-in-out infinite;
+    }
+
+    .garland span:nth-child(2n) { animation-delay: 0.5s; }
+    .garland span:nth-child(3n) { animation-delay: 1s; }
+
+    .side-decor {
+      position: absolute;
+      top: 40px;
+      bottom: 40px;
+      width: 12px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255, 111, 183, 0.26), rgba(93, 224, 255, 0.28));
+      filter: blur(0.5px);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .side-decor.left { left: 14px; }
+    .side-decor.right { right: 14px; }
+
+    .scroll-hint {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 12px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.4px;
+      z-index: 8;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    body.open .scroll-hint { opacity: 1; }
+
+    .decor-icons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: #ffd7f2;
+      opacity: 0.85;
+      font-size: 20px;
+      margin-top: 6px;
+    }
+
+    .hero-photo {
+      margin-top: 12px;
+    }
+
+    .hero-photo-inner {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: linear-gradient(135deg, rgba(255, 126, 199, 0.2), rgba(255, 179, 244, 0.2));
+      border: 1px solid var(--stroke);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.32);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .hero-photo-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .story.visible .hero-photo-inner {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .memories-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .memory {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px dashed rgba(255, 255, 255, 0.3);
+      background: linear-gradient(135deg, rgba(255, 126, 199, 0.2), rgba(255, 179, 244, 0.18));
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .story.visible .memory {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .memories-grid .memory:nth-child(1) { transition-delay: 0ms; }
+    .memories-grid .memory:nth-child(2) { transition-delay: 60ms; }
+    .memories-grid .memory:nth-child(3) { transition-delay: 120ms; }
+    .memories-grid .memory:nth-child(4) { transition-delay: 180ms; }
+    .memories-grid .memory:nth-child(5) { transition-delay: 240ms; }
+    .memories-grid .memory:nth-child(6) { transition-delay: 300ms; }
+
+    .memory img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(1.05);
+    }
+
+    /* Music */
+    .music-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .music-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+
+    .music-list.ready .music-item {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .music-item:hover { transform: translateY(-2px); }
+
+    .music-item.active {
+      border-color: rgba(255, 126, 199, 0.8);
+      box-shadow: 0 10px 30px rgba(255, 126, 199, 0.4);
+    }
+
+    .music-item .title {
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .music-item .artist {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .player-card {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      background: rgba(255, 255, 255, 0.07);
+      box-shadow: 0 12px 44px rgba(255, 126, 199, 0.25);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .player-visual {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cover-slot {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 0;
+      overflow: hidden;
+      border: 1px solid var(--stroke);
+      background: #0f0a16;
+      z-index: 2;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
+    }
+
+    .cover-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .vinyl-slot {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+    }
+
+    .vinyl-img, .vinyl-fallback {
+      width: 92%;
+      height: 92%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.6);
+    }
+
+    .vinyl-fallback {
+      display: none;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.05)),
+        radial-gradient(circle at 50% 50%, #0d0d0d 40%, #050505 60%, #111 80%),
+        repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04) 0, rgba(255, 255, 255, 0.04) 1px, transparent 3px, transparent 4px);
+    }
+
+    .player-card.playing .vinyl-img,
+    .player-card.playing .vinyl-fallback {
+      animation: spin 6s linear infinite;
+    }
+
+    .player-meta {
+      margin-top: 12px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .player-title {
+      font-weight: 800;
+      font-size: 16px;
+      color: #ffe7f7;
+    }
+
+    .player-artist {
+      color: #ffd7f2;
+      font-size: 13px;
+    }
+
+    .player-status {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.3px;
+    }
+
+    .story.visible .player-card {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .player-controls {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .control-btn {
+      border: 1px solid var(--stroke);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .control-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255, 126, 199, 0.24); }
+
+    .slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff7ec7, #ffb3f4);
+      box-shadow: 0 6px 16px rgba(255, 126, 199, 0.35);
+      cursor: pointer;
+    }
+
+    .slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff7ec7, #ffb3f4);
+      box-shadow: 0 6px 16px rgba(255, 126, 199, 0.35);
+      cursor: pointer;
+    }
+
+    /* Coupons */
+    .coupon-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .coupon {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px dashed rgba(255, 230, 245, 0.7);
+      background:
+        url("assets/cats/cat.png"),
+        url("assets/cats/cat.png"),
+        linear-gradient(135deg, rgba(15, 9, 20, 0.70), rgba(18, 10, 26, 0.73));
+      background-size: 24px 24px, 24px 24px, auto;
+      background-position: 0 0, 220px 220px, center;
+      background-repeat: space, space, no-repeat;
+      opacity: 0.7;
+      transform: translateY(14px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 10px 30px rgba(255, 126, 199, 0.25);
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .coupon::before, .coupon::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: var(--bg-dark);
+      border: 1px dashed rgba(255, 255, 255, 0.24);
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .coupon::before { left: -9px; }
+    .coupon::after { right: -9px; }
+
+    .coupon .tagline {
+      font-size: 12px;
+      letter-spacing: 0.4px;
+      color: #ffd7f2;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .coupon h3 { margin: 0 0 6px; }
+    .coupon p { margin: 2px 0; color: var(--muted); }
+
+    .coupon .heart-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      color: #ff9bd4;
+      font-size: 16px;
+    }
+
+    .story.visible .coupon {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .wishes {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .wish {
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(0, 0, 0, 0.24);
+      color: var(--muted);
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .signature {
+      margin-top: 16px;
+      text-align: right;
+      font-weight: 700;
+      color: #ffd27d;
+    }
+
+    .story.visible .wish {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .gift-overlay {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 50% 30%, rgba(255, 111, 183, 0.16), rgba(10, 15, 32, 0.94));
+      z-index: 9;
+      transition: opacity 0.7s ease, transform 0.6s ease;
+    }
+
+    .gift-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.02);
+    }
+
+    .gift-stack {
+      display: grid;
+      place-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+
+    .gift {
+      width: 150px;
+      height: 150px;
+      position: relative;
+      cursor: pointer;
+      animation: gift-bounce 2.4s ease-in-out infinite;
+    }
+
+    .gift .box {
+      position: absolute;
+      inset: 30px 0 0 0;
+      background: linear-gradient(135deg, #ff6fb7, #ff9f6f);
+      border-radius: 12px;
+      box-shadow: 0 14px 40px rgba(255, 111, 183, 0.35);
+    }
+
+    .gift .lid {
+      position: absolute;
+      top: 0;
+      left: -6px;
+      right: -6px;
+      height: 36px;
+      background: linear-gradient(135deg, #5de0ff, #7ed4ff);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(93, 224, 255, 0.35);
+      transform-origin: center;
+      transition: transform 0.4s ease;
+    }
+
+    .gift .ribbon {
+      position: absolute;
+      width: 18px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .gift.open .lid { transform: translateY(-36px) rotate(-12deg) scale(1.05); }
+
+    .gift-text {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+      max-width: 260px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .floating-heart {
+      position: fixed;
+      width: 18px;
+      height: 16px;
+      background: radial-gradient(circle at 30% 30%, #fff, hsl(var(--hue, 330), 90%, 70%));
+      clip-path: path("M9 16s-9-5.4-9-11A5 5 0 0 1 9 2a5 5 0 0 1 9 3c0 5.6-9 11-9 11Z");
+      transform: translate(-50%, -50%);
+      animation: pop 1.5s ease forwards;
+      pointer-events: none;
+      z-index: 10;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
+    }
+
+    @media (min-width: 900px) {
+      body { justify-content: center; }
+      .story-container { width: min(520px, 100% - 40px); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes glow {
+      from { filter: drop-shadow(0 0 10px rgba(255, 111, 183, 0.6)); }
+      to { filter: drop-shadow(0 0 18px rgba(93, 224, 255, 0.6)); }
+    }
+
+    @keyframes float {
+      from { transform: translateY(0px) scale(1); }
+      to { transform: translateY(14px) scale(1.03); }
+    }
+
+    @keyframes pop {
+      0% { transform: translate(-50%, -50%) scale(0.6); opacity: 1; }
+      70% { transform: translate(-50%, -60%) scale(1.4); opacity: 0.9; }
+      100% { transform: translate(-50%, -120%) scale(0.5); opacity: 0; }
+    }
+
+    @keyframes drift {
+      from { background-position: 0 0, 0 0, 0 0; }
+      to { background-position: 300px 300px, -200px 200px, 200px -200px; }
+    }
+
+    @keyframes gift-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-18px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body class="locked">
+  <canvas id="snow"></canvas>
+  <div class="glow-circle"></div>
+
+  <div id="giftOverlay" class="gift-overlay">
+    <div class="gift-stack">
+      <div class="gift" id="giftBox">
+        <div class="lid"></div>
+        <div class="box"></div>
+        <div class="ribbon"></div>
+      </div>
+      <div class="gift-text">
+        Жаным, этот подарок для тебя
+      </div>
+      <div class="pill">🎁 Нажми, чтобы открыть</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">Свайпай вниз, чтобы листать</div>
+
+  <main>
+    <div class="story-container" id="stories">
+
+      <section class="story hero-story" id="story-hero">
+        <div class="sparkles"></div>
+        <div class="ornament"></div>
+        <div class="side-decor left"></div>
+        <div class="side-decor right"></div>
+        <div class="hero-ornaments">
+          <div class="ribbon-curve left"></div>
+          <div class="ribbon-curve right"></div>
+          <div class="heart-bloom"></div>
+          <div class="snowflake"></div>
+        </div>
+        <h1>Любимая, с Новым годом и с твоим днем рождения!</h1>
+        <p class="lead" data-typed>
+          Пусть этот год пройдет самым лучшим, чтобы было больше приятных воспоминаний чтобы и этот год и твои 21 запомнились нам как самое лучшее время, а я буду рядом, всегда вместе с тобой
+        <p class="lead">
+          (Этот сайт должен был быть готов к 00:00 но я чучут тупой забыл зарядчик от ноута взять с собой)
+        </p>
+        <div class="hero-photo">
+          <div class="hero-photo-inner">
+            <img src="assets/hero-square.jpg" alt="Наш кадр" loading="lazy">
+          </div>
+        </div>
+      </section>
+
+      <section class="story music-story" id="story-music">
+        <h2>Музыка, которая ассоцируется с моим солнышком</h2>
+        <div class="music-list" id="musicList"></div>
+        <div class="player-card" id="playerCard">
+          <div class="player-visual">
+            <div class="cover-slot">
+              <img id="coverImg" alt="Обложка" src="">
+            </div>
+            <div class="vinyl-slot">
+              <img id="vinylImg" class="vinyl-img" alt="Винил" src="">
+              <div class="vinyl-fallback" id="vinylFallback"></div>
+            </div>
+          </div>
+          <div class="player-meta">
+            <div class="player-title" id="playerTitle">Песня</div>
+            <div class="player-artist" id="playerArtist">Исполнитель</div>
+            <div class="player-status" id="playerStatus"></div>
+          </div>
+          <div class="player-controls">
+            <div class="control-row">
+              <button class="control-btn" id="playPause">▶</button>
+              <input type="range" class="slider" id="seekBar" min="0" max="100" value="0">
+              <div class="player-status" id="timeLabel">0:00 / 0:00</div>
+            </div>
+            <div class="control-row">
+              <span class="player-status">Громкость</span>
+              <input type="range" class="slider" id="volume" min="0" max="1" step="0.01" value="0.8">
+              <span class="player-status" id="volumeLabel">80%</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="story coupon-story" id="story-coupons">
+        <h2>Твои купоны</h2>
+        <p class="lead">Все для тебя</p>
+        <div class="coupon-grid">
+          <div class="coupon">
+            <div class="tagline">бесконечно</div>
+            <h3>Купон на объятия</h3>
+            <p>Чтобы я грел тебя всегда</p>
+            <p>Количество: бесконечное</p>
+            <div class="heart-row">❤️ ❤️ ❤️</div>
+          </div>
+          <div class="coupon">
+            <div class="tagline">бесконечно</div>
+            <h3>Купон на поцелуй</h3>
+            <p>Любые поцелуи на твой выбор</p>
+            <p>Количество: бесконечное</p>
+            <div class="heart-row">💋 ❤️ 💋</div>
+          </div>
+          <div class="coupon">
+            <div class="tagline">одноразовый</div>
+            <h3>Докинуть на коллектор ангелы</h3>
+            <p>Чтобы гоняла по землям рассвета самая модная</p>
+            <p>Количество: одно</p>
+            <div class="heart-row">✨ ❤️ ✨</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="story memories-story" id="story-memories">
+        <h2>Что-то очень важное</h2>
+        <div class="memories-grid">
+          <div class="memory"><img src="assets/memories/m1.jpg" alt="Момент 1" loading="lazy"></div>
+          <div class="memory"><img src="assets/memories/m2.jpg" alt="Момент 2" loading="lazy"></div>
+          <div class="memory"><img src="assets/memories/m3.jpg" alt="Момент 3" loading="lazy"></div>
+          <div class="memory"><img src="assets/memories/m4.jpg" alt="Момент 4" loading="lazy"></div>
+          <div class="memory"><img src="assets/memories/m5.jpg" alt="Момент 5" loading="lazy"></div>
+          <div class="memory"><img src="assets/memories/m6.jpg" alt="Момент 6" loading="lazy"></div>
+        </div>
+      </section>
+
+      <section class="story wishes-story" id="story-wishes">
+        <h2>Пожелания на год</h2>
+        <div class="wishes">
+          <div class="wish">Пусть каждый твой день проходит лучше вчерашнего</div>
+          <div class="wish">Пусть все мечты исполняются</div>
+          <div class="wish">Пусть здоровье, силы никогда не заканчиваются</div>
+          <div class="wish">Пусть не будет никаких проблем в жизни</div>
+          <div class="wish">Пусть любовь между нами только растет с каждым днем</div>
+        </div>
+        <div class="signature">С любовью, твой муш </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    const body = document.body;
+    const overlay = document.getElementById("giftOverlay");
+    const gift = document.getElementById("giftBox");
+    const musicList = document.getElementById("musicList");
+    const playerCard = document.getElementById("playerCard");
+    const coverImg = document.getElementById("coverImg");
+    const vinylImg = document.getElementById("vinylImg");
+    const vinylFallback = document.getElementById("vinylFallback");
+    const titleEl = document.getElementById("playerTitle");
+    const artistEl = document.getElementById("playerArtist");
+    const statusEl = document.getElementById("playerStatus");
+    const playPauseBtn = document.getElementById("playPause");
+    const seekBar = document.getElementById("seekBar");
+    const timeLabel = document.getElementById("timeLabel");
+    const volumeSlider = document.getElementById("volume");
+    const volumeLabel = document.getElementById("volumeLabel");
+    const snowCanvas = document.getElementById("snow");
+
+    const trackData = [
+      { key: "you", title: "YOU", artist: "Chase Atlantic", cover: "assets/music/you.jpg", audio: "assets/music/you.mp3", vinyl: "assets/music/vinyl.png" },
+      { key: "i-wanna", title: "I Wanna Be Yours", artist: "Arctic Monkeys", cover: "assets/music/i-wanna.jpg", audio: "assets/music/i-wanna.mp3", vinyl: "assets/music/vinyl.png" },
+      { key: "stargazing", title: "Stargazing", artist: "The Neighbourhood", cover: "assets/music/stargazing.jpg", audio: "assets/music/stargazing.mp3", vinyl: "assets/music/vinyl.png" },
+      { key: "eyedress", title: "Something About You", artist: "Eyedress", cover: "assets/music/eyedress.jpg", audio: "assets/music/eyedress.mp3", vinyl: "assets/music/vinyl.png" },
+      { key: "mdee", title: "Нужна", artist: "Mdee", cover: "assets/music/mdee.jpg", audio: "assets/music/mdee.mp3", vinyl: "assets/music/vinyl.png" },
+      { key: "melancholy", title: "On Melancholy Hill", artist: "Gorillaz", cover: "assets/music/melancholy.jpg", audio: "assets/music/melancholy.mp3", vinyl: "assets/music/vinyl.png" },
+      { key: "peremotka", title: "Как тебя покорить", artist: "Перемотка", cover: "assets/music/peremotka.jpg", audio: "assets/music/peremotka.mp3", vinyl: "assets/music/vinyl.png" },
+      { key: "face", title: "24 на 7", artist: "Face", cover: "assets/music/face.jpg", audio: "assets/music/face.mp3", vinyl: "assets/music/vinyl.png" }
+    ];
+
+    function svgFallback(text) {
+      const safe = text.replace(/"/g, "'");
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400' fill='none'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop stop-color='%23ff6fb7'/><stop offset='1' stop-color='%235de0ff'/></linearGradient></defs><rect width='400' height='400' rx='28' fill='url(%23g)'/><text x='50%' y='50%' fill='white' font-size='34' font-family='Arial' font-weight='700' text-anchor='middle' dy='12'>${safe}</text></svg>`;
+      return "data:image/svg+xml," + encodeURIComponent(svg);
+    }
+
+    function buildList() {
+      musicList.innerHTML = "";
+      trackData.forEach((track, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "music-item" + (idx === 0 ? " active" : "");
+        btn.dataset.key = track.key;
+        btn.innerHTML = `<span class="title">${track.title}</span><span class="artist">${track.artist}</span>`;
+        btn.addEventListener("click", () => selectTrack(track, btn));
+        musicList.appendChild(btn);
+      });
+    }
+
+    function openGift() {
+      gift.classList.add("open");
+      overlay.classList.add("hidden");
+      body.classList.remove("locked");
+      body.classList.add("open");
+      setTimeout(() => overlay.style.display = "none", 750);
+    }
+
+    overlay.addEventListener("click", openGift);
+
+    let currentAudio = null;
+    let duration = 0;
+
+    function setCover(src, titleText) {
+      coverImg.src = src || "";
+      coverImg.onerror = () => { coverImg.src = svgFallback(titleText); };
+    }
+
+    function setVinyl(src) {
+      if (!src) {
+        vinylImg.style.display = "none";
+        vinylFallback.style.display = "block";
+        return;
+      }
+      vinylImg.src = src;
+      vinylImg.onerror = () => { vinylImg.style.display = "none"; vinylFallback.style.display = "block"; };
+      vinylImg.onload = () => { vinylImg.style.display = "block"; vinylFallback.style.display = "none"; };
+    }
+
+    function selectTrack(track, buttonEl) {
+      document.querySelectorAll(".music-item").forEach(btn => btn.classList.remove("active"));
+      buttonEl.classList.add("active");
+
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      duration = 0;
+      seekBar.value = 0;
+      timeLabel.textContent = "0:00 / 0:00";
+
+      currentAudio = new Audio(track.audio);
+      currentAudio.preload = "auto";
+      currentAudio.onended = () => {
+        playerCard.classList.remove("playing");
+        statusEl.textContent = "";
+        playPauseBtn.textContent = "\u25B6";
+        seekBar.value = 0;
+        timeLabel.textContent = "0:00 / 0:00";
+      };
+      currentAudio.onerror = () => { statusEl.textContent = ""; playerCard.classList.remove("playing"); };
+      currentAudio.ontimeupdate = handleTimeUpdate;
+      currentAudio.onloadedmetadata = () => {
+        duration = currentAudio.duration || 0;
+        updateTimeLabel();
+      };
+      currentAudio.volume = parseFloat(volumeSlider.value || 0.8);
+
+      setCover(track.cover, track.title);
+      setVinyl(track.vinyl);
+      titleEl.textContent = track.title;
+      artistEl.textContent = track.artist;
+      statusEl.textContent = "";
+      playerCard.classList.add("playing");
+
+      currentAudio.play().then(() => {
+        playerCard.classList.add("playing");
+        playPauseBtn.textContent = "\u275A\u275A";
+      }).catch(() => {
+        statusEl.textContent = "";
+        playerCard.classList.remove("playing");
+        playPauseBtn.textContent = "\u25B6";
+      });
+    }
+
+    function handleTimeUpdate() {
+      if (!currentAudio) return;
+      duration = currentAudio.duration || duration || 0;
+      if (!duration) return;
+      const pct = (currentAudio.currentTime / duration) * 100;
+      seekBar.value = pct;
+      updateTimeLabel();
+    }
+
+    function updateTimeLabel() {
+      const fmt = (t) => {
+        const m = Math.floor(t / 60);
+        const s = Math.floor(t % 60).toString().padStart(2, "0");
+        return `${m}:${s}`;
+      };
+      const cur = currentAudio ? fmt(currentAudio.currentTime || 0) : "0:00";
+      const dur = duration ? fmt(duration) : "0:00";
+      timeLabel.textContent = `${cur} / ${dur}`;
+    }
+
+    function togglePlay() {
+      if (!currentAudio) return;
+      if (currentAudio.paused) {
+        currentAudio.play().then(() => {
+          playerCard.classList.add("playing");
+          playPauseBtn.textContent = "\u275A\u275A";
+        }).catch(() => {
+          statusEl.textContent = "";
+        });
+      } else {
+        currentAudio.pause();
+        playerCard.classList.remove("playing");
+        playPauseBtn.textContent = "\u25B6";
+      }
+    }
+
+    function seekTo(value) {
+      if (!currentAudio || !duration) return;
+      const t = (value / 100) * duration;
+      currentAudio.currentTime = t;
+      updateTimeLabel();
+    }
+
+    function updateVolume(value) {
+      const v = parseFloat(value);
+      if (currentAudio) currentAudio.volume = v;
+      volumeLabel.textContent = `${Math.round(v * 100)}%`;
+    }
+
+    // Intersection Observer for story visibility & staggered music
+    const stories = document.querySelectorAll(".story");
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          if (entry.target.id === "story-music") {
+            musicList.classList.add("ready");
+            musicList.querySelectorAll(".music-item").forEach((item, idx) => {
+              item.style.animation = `slideIn 0.45s ease forwards`;
+              item.style.animationDelay = `${idx * 70}ms`;
+            });
+          }
+        } else {
+          entry.target.classList.remove("visible");
+        }
+      });
+    }, { threshold: 0.5 });
+
+    stories.forEach(story => observer.observe(story));
+
+    // Typing effect for elements with data-typed
+    function typeText(el) {
+      const text = el.textContent;
+      el.textContent = "";
+      let i = 0;
+      const tick = () => {
+        el.textContent = text.slice(0, i);
+        i += 1;
+        if (i <= text.length) requestAnimationFrame(tick);
+      };
+      tick();
+    }
+
+    const typedTargets = document.querySelectorAll("[data-typed]");
+    const typedOnce = new WeakSet();
+    const typedObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !typedOnce.has(entry.target)) {
+          typedOnce.add(entry.target);
+          typeText(entry.target);
+        }
+      });
+    }, { threshold: 0.6 });
+
+    typedTargets.forEach(t => typedObs.observe(t));
+
+    playPauseBtn.addEventListener("click", togglePlay);
+    seekBar.addEventListener("input", (e) => seekTo(e.target.value));
+    volumeSlider.addEventListener("input", (e) => updateVolume(e.target.value));
+    updateVolume(volumeSlider.value || 0.8);
+
+    // Floating hearts on tap/click
+
+    function popHeart(x, y) {
+      const heart = document.createElement("span");
+      heart.className = "floating-heart";
+      heart.style.left = `${x}px`;
+      heart.style.top = `${y}px`;
+      heart.style.setProperty("--hue", 330 + Math.random() * 60);
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 1500);
+    }
+
+    document.addEventListener("click", (e) => {
+      popHeart(e.clientX, e.clientY);
+    });
+
+    // Snow
+    const ctx = snowCanvas.getContext("2d");
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    let flakes = [];
+
+    function resizeCanvas() {
+      width = snowCanvas.width = window.innerWidth;
+      height = snowCanvas.height = window.innerHeight;
+    }
+
+    function createFlake() {
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 2.2 + 0.8,
+        s: Math.random() * 0.7 + 0.4,
+        o: Math.random() * 0.5 + 0.35
+      };
+    }
+
+    function initFlakes() {
+      flakes = Array.from({ length: 190 }, createFlake);
+    }
+
+    function drawSnow() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#fff";
+
+      flakes.forEach(flake => {
+        flake.y += flake.s * 2;
+        flake.x += Math.sin(flake.y * 0.01) * 0.6;
+        if (flake.y > height) {
+          flake.y = -10;
+          flake.x = Math.random() * width;
+        }
+        ctx.globalAlpha = flake.o;
+        ctx.beginPath();
+        ctx.arc(flake.x, flake.y, flake.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      requestAnimationFrame(drawSnow);
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+
+    
+    resizeCanvas();
+    initFlakes();
+    drawSnow();
+    buildList();
+    // Автовыбор первого трека
+    const firstBtn = musicList.querySelector(".music-item");
+    if (firstBtn) selectTrack(trackData[0], firstBtn);
+  </script>
+</body>
+</html>
+
+
+
